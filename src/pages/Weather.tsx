@@ -1,11 +1,11 @@
-import { Sun, Cloud, CloudRain, CloudLightning, Droplets, Wind, Thermometer, MapPin, Calendar, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Sun, Cloud, CloudRain, CloudLightning, Droplets, Wind, Thermometer, MapPin, Calendar, AlertTriangle, RefreshCw, Info } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useWeather, WeatherCondition } from '@/hooks/useWeather';
+import { useWeather } from '@/hooks/useWeather';
 
 const weatherIcons = {
   sunny: Sun,
@@ -192,6 +192,21 @@ export default function Weather() {
             </div>
           </div>
         </Card>
+
+        {/* API Key / Mock Data Warning */}
+        {weather.meta?.isMock && weather.meta.warning && (
+          <Card className="border-warning/50 bg-warning/5">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <Info className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-warning">Weather API not active yet</p>
+                  <p className="text-sm text-muted-foreground mt-1">{weather.meta.warning}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Weather Alert */}
         {weather.weekly.some(day => day.rainChance > 60) && (

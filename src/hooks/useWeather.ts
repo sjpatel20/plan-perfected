@@ -39,6 +39,10 @@ export interface WeatherData {
   hourly: HourlyForecast[];
   weekly: DailyForecast[];
   lastUpdated: string;
+  meta?: {
+    isMock: boolean;
+    warning?: string;
+  };
 }
 
 interface UseWeatherResult {
