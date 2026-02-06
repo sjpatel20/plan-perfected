@@ -1,6 +1,7 @@
 import { User, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
+import { TextToSpeech } from '@/components/voice/TextToSpeech';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
@@ -10,6 +11,7 @@ interface ChatMessageProps {
 
 export function ChatMessage({ role, content, isStreaming }: ChatMessageProps) {
   const isUser = role === 'user';
+  const isAssistant = role === 'assistant';
 
   return (
     <div
@@ -27,9 +29,14 @@ export function ChatMessage({ role, content, isStreaming }: ChatMessageProps) {
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
       </div>
       <div className="flex-1 min-w-0 pt-1">
-        <p className="text-xs font-medium text-muted-foreground mb-1">
-          {isUser ? 'You' : 'AIkosh'}
-        </p>
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-xs font-medium text-muted-foreground">
+            {isUser ? 'You' : 'AIkosh'}
+          </p>
+          {isAssistant && !isStreaming && content && (
+            <TextToSpeech text={content} />
+          )}
+        </div>
         <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none">
           <ReactMarkdown>{content}</ReactMarkdown>
         </div>

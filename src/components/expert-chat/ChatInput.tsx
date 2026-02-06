@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { VoiceInput } from '@/components/voice/VoiceInput';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -28,6 +29,15 @@ export function ChatInput({ onSend, isLoading, placeholder }: ChatInputProps) {
     }
   };
 
+  const handleVoiceTranscript = (transcript: string) => {
+    if (transcript.trim()) {
+      // Append to existing input or set as new
+      setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      // Focus the textarea so user can review/edit
+      textareaRef.current?.focus();
+    }
+  };
+
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
@@ -47,6 +57,10 @@ export function ChatInput({ onSend, isLoading, placeholder }: ChatInputProps) {
         className="min-h-[44px] max-h-[150px] resize-none"
         disabled={isLoading}
         rows={1}
+      />
+      <VoiceInput
+        onTranscript={handleVoiceTranscript}
+        disabled={isLoading}
       />
       <Button
         type="submit"
