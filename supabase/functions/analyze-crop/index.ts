@@ -199,6 +199,67 @@ Provide a detailed diagnosis.`;
 
     console.log("Diagnosis complete:", diagnosis.status);
 
+    // Save scan to database
+    try {
+      // Upload image to storage
+      const fileName = `${user.id}/${Date.now()}.jpg`;
+      const imageBuffer = Uint8Array.from(atob(image_base64), c => c.charCodeAt(0));
+      
+      const { error: uploadError } = await supabaseClient.storage
+        .from('crop-scans')
+        .upload(fileName, imageBuffer, {
+          contentType: 'image/jpeg',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error("Image upload error:", uploadError);
+      }
+
+      // Get public URL
+      const { data: urlData } = supabaseClient.storage
+        .from('crop-scans')
+        .getPublicUrl(fileName);
+
+      const imageUrl = urlData?.publicUrl || '';
+
+      // Parse location if provided
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      if (location) {
+        const coords = location.split(',').map((c: string) => parseFloat(c.trim()));
+        if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+          latitude = coords[0];
+          longitude = coords[1];
+        }
+      }
+
+      // Insert scan record
+      const { data: scanData, error: scanError } = await supabaseClient
+        .from('crop_scans')
+        .insert({
+          user_id: user.id,
+          image_url: imageUrl,
+          disease_detected: diagnosis.disease_name,
+          confidence_score: diagnosis.confidence,
+          diagnosis_result: diagnosis,
+          recommendations: diagnosis.recommendations,
+          latitude,
+          longitude,
+        })
+        .select('id')
+        .single();
+
+      if (scanError) {
+        console.error("Scan insert error:", scanError);
+      } else {
+        console.log("Scan saved with id:", scanData?.id);
+      }
+    } catch (saveError) {
+      console.error("Error saving scan:", saveError);
+      // Continue - don't fail the response if save fails
+    }
+
     return new Response(JSON.stringify({ diagnosis }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
