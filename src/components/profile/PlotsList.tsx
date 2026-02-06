@@ -41,17 +41,26 @@ const SOIL_TYPES = [
 ];
 
 const IRRIGATION_TYPES = [
-  'Borewell',
-  'Canal',
-  'River',
-  'Tank',
-  'Drip',
-  'Sprinkler',
-  'Rainfed',
-  'Other',
+  { value: 'borewell', label: 'Borewell' },
+  { value: 'canal', label: 'Canal' },
+  { value: 'drip', label: 'Drip' },
+  { value: 'sprinkler', label: 'Sprinkler' },
+  { value: 'rainfed', label: 'Rainfed' },
+  { value: 'other', label: 'Other' },
 ];
 
-const OWNERSHIP_TYPES = ['Owned', 'Leased', 'Shared'];
+const OWNERSHIP_TYPES = [
+  { value: 'owned', label: 'Owned' },
+  { value: 'leased', label: 'Leased' },
+  { value: 'shared', label: 'Shared' },
+];
+
+// Helper to format display of irrigation/ownership types
+const formatType = (value: string | null | undefined, types: { value: string; label: string }[]): string => {
+  if (!value) return '—';
+  const found = types.find(t => t.value === value);
+  return found ? found.label : value;
+};
 
 interface PlotFormData {
   plot_name: string;
@@ -213,7 +222,7 @@ export function PlotsList() {
                     </div>
                     <div>
                       <p className="text-muted-foreground">Irrigation</p>
-                      <p className="font-medium">{plot.irrigation_type || '—'}</p>
+                      <p className="font-medium">{formatType(plot.irrigation_type, IRRIGATION_TYPES)}</p>
                     </div>
                     <div className="col-span-2">
                       <p className="text-muted-foreground">Current Crop</p>
@@ -292,7 +301,7 @@ export function PlotsList() {
                   </SelectTrigger>
                   <SelectContent>
                     {IRRIGATION_TYPES.map((type) => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -309,7 +318,7 @@ export function PlotsList() {
                 </SelectTrigger>
                 <SelectContent>
                   {OWNERSHIP_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
