@@ -9,6 +9,7 @@ import {
   LogOut,
   Sparkles,
 } from 'lucide-react';
+import smartKisanLogo from '@/assets/smart-kisan-logo.jpg';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -54,9 +55,11 @@ export function AppSidebar() {
         {!collapsed && (
           <div className="px-4 pb-4 mb-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                <span className="text-2xl">🌾</span>
-              </div>
+              <img 
+                src={smartKisanLogo} 
+                alt="Smart किसान" 
+                className="w-10 h-10 object-contain"
+              />
               <div>
                 <h2 className="font-bold text-lg text-sidebar-foreground">{t('appName')}</h2>
                 <p className="text-xs text-sidebar-foreground/70">{t('appTagline')}</p>
