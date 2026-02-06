@@ -31,7 +31,7 @@ const translations = {
     logout: 'Logout',
     
     // Dashboard
-    welcomeMessage: 'Welcome to KisanIQ',
+    welcomeMessage: 'Welcome to Smart किसान',
     todayWeather: "Today's Weather",
     weatherAlerts: 'Weather Alerts',
     cropStatus: 'Crop Status',
@@ -103,7 +103,7 @@ const translations = {
     logout: 'लॉग आउट',
     
     // Dashboard
-    welcomeMessage: 'किसानIQ में आपका स्वागत है',
+    welcomeMessage: 'Smart किसान में आपका स्वागत है',
     todayWeather: 'आज का मौसम',
     weatherAlerts: 'मौसम अलर्ट',
     cropStatus: 'फसल की स्थिति',
@@ -175,7 +175,7 @@ const translations = {
     logout: 'లాగ్ అవుట్',
     
     // Dashboard
-    welcomeMessage: 'కిసాన్IQ కి స్వాగతం',
+    welcomeMessage: 'Smart కిసాన్ కి స్వాగతం',
     todayWeather: 'ఈరోజు వాతావరణం',
     weatherAlerts: 'వాతావరణ హెచ్చరికలు',
     cropStatus: 'పంట స్థితి',
@@ -247,7 +247,7 @@ const translations = {
     logout: 'வெளியேறு',
     
     // Dashboard
-    welcomeMessage: 'கிசான்IQ க்கு வரவேற்கிறோம்',
+    welcomeMessage: 'Smart கிசான் க்கு வரவேற்கிறோம்',
     todayWeather: 'இன்றைய வானிலை',
     weatherAlerts: 'வானிலை எச்சரிக்கைகள்',
     cropStatus: 'பயிர் நிலை',
@@ -319,7 +319,7 @@ const translations = {
     logout: 'बाहेर पडा',
     
     // Dashboard
-    welcomeMessage: 'किसानIQ मध्ये आपले स्वागत',
+    welcomeMessage: 'Smart किसान मध्ये आपले स्वागत',
     todayWeather: 'आजचे हवामान',
     weatherAlerts: 'हवामान सूचना',
     cropStatus: 'पीक स्थिती',
