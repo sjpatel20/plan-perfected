@@ -23,7 +23,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {/* Header */}
           <header className="h-16 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-40">
             <div className="flex items-center gap-3">
-              <SidebarTrigger className="lg:hidden" />
+              <SidebarTrigger />
               <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <img 
                   src={smartKisanLogo} 
