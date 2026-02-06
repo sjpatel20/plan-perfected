@@ -1,10 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+// Input validation schema
+const AnalyzeSchema = z.object({
+  image_base64: z.string().min(1).max(10_000_000), // ~7.5MB max
+  crop_name: z.string().max(100).optional(),
+  location: z.string().regex(/^-?\d+\.?\d*,\s*-?\d+\.?\d*$/).optional(),
+});
 
 interface DiagnosisResult {
   status: "healthy" | "diseased" | "pest_affected" | "nutrient_deficiency" | "unknown";
@@ -43,14 +51,20 @@ serve(async (req) => {
       });
     }
 
-    const { image_base64, crop_name, location } = await req.json();
-
-    if (!image_base64) {
-      return new Response(JSON.stringify({ error: "Image is required" }), {
+    // Parse and validate input
+    let validatedInput;
+    try {
+      const rawBody = await req.json();
+      validatedInput = AnalyzeSchema.parse(rawBody);
+    } catch (validationError) {
+      console.error("Input validation failed:", validationError);
+      return new Response(JSON.stringify({ error: "Invalid input format" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const { image_base64, crop_name, location } = validatedInput;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -200,6 +214,7 @@ Provide a detailed diagnosis.`;
     console.log("Diagnosis complete:", diagnosis.status);
 
     // Save scan to database
+    let signedImageUrl = '';
     try {
       // Upload image to storage
       const fileName = `${user.id}/${Date.now()}.jpg`;
@@ -216,12 +231,16 @@ Provide a detailed diagnosis.`;
         console.error("Image upload error:", uploadError);
       }
 
-      // Get public URL
-      const { data: urlData } = supabaseClient.storage
+      // Get signed URL (valid for 7 days)
+      const { data: signedUrlData, error: signedUrlError } = await supabaseClient.storage
         .from('crop-scans')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 60 * 60 * 24 * 7); // 7 days
 
-      const imageUrl = urlData?.publicUrl || '';
+      if (signedUrlError) {
+        console.error("Signed URL error:", signedUrlError);
+      } else {
+        signedImageUrl = signedUrlData?.signedUrl || '';
+      }
 
       // Parse location if provided
       let latitude: number | null = null;
@@ -234,12 +253,12 @@ Provide a detailed diagnosis.`;
         }
       }
 
-      // Insert scan record
+      // Insert scan record with signed URL
       const { data: scanData, error: scanError } = await supabaseClient
         .from('crop_scans')
         .insert({
           user_id: user.id,
-          image_url: imageUrl,
+          image_url: signedImageUrl,
           disease_detected: diagnosis.disease_name,
           confidence_score: diagnosis.confidence,
           diagnosis_result: diagnosis,
@@ -266,7 +285,7 @@ Provide a detailed diagnosis.`;
     });
   } catch (error) {
     console.error("Error in analyze-crop:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
