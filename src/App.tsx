@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { OfflineIndicator } from "@/components/pwa/OfflineIndicator";
+import { ThemeProvider } from "next-themes";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -24,33 +25,35 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <OfflineIndicator />
-        <InstallPrompt />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/auth" element={<Auth />} />
-            
-            {/* Protected routes */}
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/weather" element={<ProtectedRoute><Weather /></ProtectedRoute>} />
-            <Route path="/crop-health" element={<ProtectedRoute><CropHealth /></ProtectedRoute>} />
-            <Route path="/market" element={<ProtectedRoute><Market /></ProtectedRoute>} />
-            <Route path="/expert-chat" element={<ProtectedRoute><ExpertChat /></ProtectedRoute>} />
-            <Route path="/schemes" element={<ProtectedRoute><Schemes /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            
-            {/* Catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </LanguageProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <OfflineIndicator />
+          <InstallPrompt />
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Protected routes */}
+              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/weather" element={<ProtectedRoute><Weather /></ProtectedRoute>} />
+              <Route path="/crop-health" element={<ProtectedRoute><CropHealth /></ProtectedRoute>} />
+              <Route path="/market" element={<ProtectedRoute><Market /></ProtectedRoute>} />
+              <Route path="/expert-chat" element={<ProtectedRoute><ExpertChat /></ProtectedRoute>} />
+              <Route path="/schemes" element={<ProtectedRoute><Schemes /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              
+              {/* Catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
