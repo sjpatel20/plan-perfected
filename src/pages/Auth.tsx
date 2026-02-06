@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
+import smartKisanAuthLogo from '@/assets/smart-kisan-auth-logo.jpg';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -100,8 +101,8 @@ export default function Auth() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-xl mb-4">
-            <span className="text-4xl">🌾</span>
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-white shadow-xl mb-4 overflow-hidden">
+            <img src={smartKisanAuthLogo} alt="Smart किसान" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-foreground">{t('appName')}</h1>
           <p className="text-muted-foreground mt-1">{t('appTagline')}</p>
