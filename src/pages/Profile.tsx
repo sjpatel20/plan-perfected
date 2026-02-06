@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { User, MapPin, Phone, Mail, Edit, Plus, Trash2, Leaf, Save, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, MapPin, Phone, Mail, Edit, Plus, Leaf, Save, Loader2, CreditCard } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,19 +9,40 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
+import { useProfile } from '@/hooks/useProfile';
+import { toast } from 'sonner';
+import { z } from 'zod';
 
-// Mock user data
-const mockProfile = {
-  fullName: 'Ram Kumar Sharma',
-  email: 'ram.sharma@example.com',
-  phone: '+91 98765 43210',
-  state: 'Madhya Pradesh',
-  district: 'Indore',
-  village: 'Sanwer',
-  pincode: '453551',
-  farmerId: 'MP-IND-2024-00123',
-};
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
+  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
+  'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
+  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+  'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+];
+
+// Validation schema
+const profileSchema = z.object({
+  full_name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
+  mobile_number: z.string().regex(/^\d{10}$/, 'Mobile number must be 10 digits').optional().or(z.literal('')),
+  state: z.string().min(1, 'State is required'),
+  district: z.string().trim().min(1, 'District is required').max(100, 'District must be less than 100 characters'),
+  village: z.string().max(100, 'Village must be less than 100 characters').optional().or(z.literal('')),
+  pincode: z.string().regex(/^\d{6}$/, 'Pincode must be 6 digits').optional().or(z.literal('')),
+  farmer_id: z.string().max(50, 'Farmer ID must be less than 50 characters').optional().or(z.literal('')),
+});
+
+interface FormData {
+  full_name: string;
+  mobile_number: string;
+  state: string;
+  district: string;
+  village: string;
+  pincode: string;
+  farmer_id: string;
+}
 
 const mockPlots = [
   {
@@ -45,17 +66,104 @@ const mockPlots = [
 export default function Profile() {
   const { t, language, setLanguage } = useLanguage();
   const { user, signOut } = useAuth();
+  const { profile, updateProfile, isLoading } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [profile, setProfile] = useState(mockProfile);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  const [formData, setFormData] = useState<FormData>({
+    full_name: '',
+    mobile_number: '',
+    state: '',
+    district: '',
+    village: '',
+    pincode: '',
+    farmer_id: '',
+  });
+
+  // Sync form data with profile when loaded
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        mobile_number: profile.mobile_number || '',
+        state: profile.state || '',
+        district: profile.district || '',
+        village: profile.village || '',
+        pincode: profile.pincode || '',
+        farmer_id: profile.farmer_id || '',
+      });
+    }
+  }, [profile]);
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user types
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
 
   const handleSave = async () => {
-    setIsSaving(true);
-    // Simulate save
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
+    // Validate with zod
+    const result = profileSchema.safeParse(formData);
+    
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          newErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(newErrors);
+      toast.error('Please fix the errors before saving');
+      return;
+    }
+
+    try {
+      await updateProfile.mutateAsync({
+        full_name: formData.full_name,
+        mobile_number: formData.mobile_number || null,
+        state: formData.state,
+        district: formData.district,
+        village: formData.village || null,
+        pincode: formData.pincode || null,
+        farmer_id: formData.farmer_id || null,
+      });
+      
+      toast.success('Profile updated successfully!');
+      setIsEditing(false);
+      setErrors({});
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update profile');
+    }
+  };
+
+  const handleCancel = () => {
+    // Reset form data to original profile
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        mobile_number: profile.mobile_number || '',
+        state: profile.state || '',
+        district: profile.district || '',
+        village: profile.village || '',
+        pincode: profile.pincode || '',
+        farmer_id: profile.farmer_id || '',
+      });
+    }
+    setErrors({});
     setIsEditing(false);
   };
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -78,11 +186,11 @@ export default function Profile() {
             </Button>
           ) : (
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
+              <Button variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
-                {isSaving ? (
+              <Button onClick={handleSave} disabled={updateProfile.isPending}>
+                {updateProfile.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Save className="h-4 w-4 mr-2" />
@@ -107,51 +215,64 @@ export default function Profile() {
                   👨‍🌾
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold">{profile.fullName}</h2>
-                  <p className="text-muted-foreground flex items-center gap-1">
-                    <Badge variant="outline" className="text-xs">
-                      Farmer ID: {profile.farmerId}
+                  <h2 className="text-xl font-semibold">{formData.full_name || 'Farmer'}</h2>
+                  <p className="text-muted-foreground text-sm">{user?.email}</p>
+                  {formData.farmer_id && (
+                    <Badge variant="outline" className="text-xs mt-1">
+                      <CreditCard className="h-3 w-3 mr-1" />
+                      {formData.farmer_id}
                     </Badge>
-                  </p>
+                  )}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="full_name">Full Name *</Label>
                   <Input
-                    id="fullName"
-                    value={profile.fullName}
-                    onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
+                    id="full_name"
+                    value={formData.full_name}
+                    onChange={(e) => handleInputChange('full_name', e.target.value)}
                     disabled={!isEditing}
+                    className={errors.full_name ? 'border-destructive' : ''}
                   />
+                  {errors.full_name && (
+                    <p className="text-xs text-destructive">{errors.full_name}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Mobile Number</Label>
+                  <Label htmlFor="mobile_number">Mobile Number</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="phone"
-                      value={profile.phone}
-                      onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                      id="mobile_number"
+                      value={formData.mobile_number}
+                      onChange={(e) => handleInputChange('mobile_number', e.target.value.replace(/\D/g, '').slice(0, 10))}
                       disabled={!isEditing}
-                      className="pl-10"
+                      className={`pl-10 ${errors.mobile_number ? 'border-destructive' : ''}`}
+                      placeholder="10-digit mobile number"
                     />
                   </div>
+                  {errors.mobile_number && (
+                    <p className="text-xs text-destructive">{errors.mobile_number}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="farmer_id">Farmer ID / Kisan ID</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="email"
-                      type="email"
-                      value={profile.email}
-                      onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                      id="farmer_id"
+                      value={formData.farmer_id}
+                      onChange={(e) => handleInputChange('farmer_id', e.target.value)}
                       disabled={!isEditing}
-                      className="pl-10"
+                      className={`pl-10 ${errors.farmer_id ? 'border-destructive' : ''}`}
+                      placeholder="Government farmer ID"
                     />
                   </div>
+                  {errors.farmer_id && (
+                    <p className="text-xs text-destructive">{errors.farmer_id}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="language">{t('selectLanguage')}</Label>
@@ -177,40 +298,73 @@ export default function Profile() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="state">State</Label>
-                    <Input
-                      id="state"
-                      value={profile.state}
-                      onChange={(e) => setProfile({ ...profile, state: e.target.value })}
-                      disabled={!isEditing}
-                    />
+                    <Label htmlFor="state">State *</Label>
+                    {isEditing ? (
+                      <Select 
+                        value={formData.state} 
+                        onValueChange={(v) => handleInputChange('state', v)}
+                      >
+                        <SelectTrigger className={errors.state ? 'border-destructive' : ''}>
+                          <SelectValue placeholder="Select your state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INDIAN_STATES.map((state) => (
+                            <SelectItem key={state} value={state}>
+                              {state}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        id="state"
+                        value={formData.state}
+                        disabled
+                      />
+                    )}
+                    {errors.state && (
+                      <p className="text-xs text-destructive">{errors.state}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="district">District</Label>
+                    <Label htmlFor="district">District *</Label>
                     <Input
                       id="district"
-                      value={profile.district}
-                      onChange={(e) => setProfile({ ...profile, district: e.target.value })}
+                      value={formData.district}
+                      onChange={(e) => handleInputChange('district', e.target.value)}
                       disabled={!isEditing}
+                      className={errors.district ? 'border-destructive' : ''}
                     />
+                    {errors.district && (
+                      <p className="text-xs text-destructive">{errors.district}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="village">Village</Label>
+                    <Label htmlFor="village">Village / Town</Label>
                     <Input
                       id="village"
-                      value={profile.village}
-                      onChange={(e) => setProfile({ ...profile, village: e.target.value })}
+                      value={formData.village}
+                      onChange={(e) => handleInputChange('village', e.target.value)}
                       disabled={!isEditing}
+                      className={errors.village ? 'border-destructive' : ''}
                     />
+                    {errors.village && (
+                      <p className="text-xs text-destructive">{errors.village}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="pincode">Pincode</Label>
                     <Input
                       id="pincode"
-                      value={profile.pincode}
-                      onChange={(e) => setProfile({ ...profile, pincode: e.target.value })}
+                      value={formData.pincode}
+                      onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, '').slice(0, 6))}
                       disabled={!isEditing}
+                      className={errors.pincode ? 'border-destructive' : ''}
+                      placeholder="6-digit pincode"
                     />
+                    {errors.pincode && (
+                      <p className="text-xs text-destructive">{errors.pincode}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -240,7 +394,11 @@ export default function Profile() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Member Since</span>
-                  <span className="font-semibold">Jan 2024</span>
+                  <span className="font-semibold">
+                    {profile?.created_at 
+                      ? new Date(profile.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+                      : 'N/A'}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -252,9 +410,11 @@ export default function Profile() {
                     <span className="text-2xl">🎖️</span>
                   </div>
                   <div>
-                    <p className="font-medium">Verified Farmer</p>
+                    <p className="font-medium">
+                      {formData.farmer_id ? 'Verified Farmer' : 'Add Farmer ID'}
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      PM-KISAN registered
+                      {formData.farmer_id ? 'PM-KISAN registered' : 'To unlock benefits'}
                     </p>
                   </div>
                 </div>
