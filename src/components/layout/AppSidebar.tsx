@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import smartKisanLogo from '@/assets/smart-kisan-logo.jpg';
 import { NavLink } from '@/components/NavLink';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Sidebar,
@@ -56,7 +56,7 @@ export function AppSidebar() {
         {/* Logo - visible in expanded state */}
         {!collapsed && (
           <div className="px-4 pb-4 mb-2">
-            <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <img 
                 src={smartKisanLogo} 
                 alt="Smart किसान" 
@@ -66,7 +66,7 @@ export function AppSidebar() {
                 <h2 className="font-bold text-lg text-sidebar-foreground">{t('appName')}</h2>
                 <p className="text-xs text-sidebar-foreground/70">{t('appTagline')}</p>
               </div>
-            </div>
+            </Link>
           </div>
         )}
 
