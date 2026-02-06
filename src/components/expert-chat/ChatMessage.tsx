@@ -28,7 +28,7 @@ export function ChatMessage({ role, content, isStreaming }: ChatMessageProps) {
       </div>
       <div className="flex-1 min-w-0 pt-1">
         <p className="text-xs font-medium text-muted-foreground mb-1">
-          {isUser ? 'You' : 'AIkosh'}
+          {isUser ? 'You' : 'Smart किसान'}
         </p>
         <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none">
           <ReactMarkdown>{content}</ReactMarkdown>
