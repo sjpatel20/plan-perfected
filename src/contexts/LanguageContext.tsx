@@ -87,7 +87,7 @@ const translations = {
     perQuintal: '/quintal',
     
     // App
-    appName: 'KisanIQ',
+    appName: 'Smart किसान',
     appTagline: 'Smart Farming, Better Harvest',
     selectLanguage: 'Select Language',
   },
@@ -159,7 +159,7 @@ const translations = {
     perQuintal: '/क्विंटल',
     
     // App
-    appName: 'किसानIQ',
+    appName: 'Smart किसान',
     appTagline: 'स्मार्ट खेती, बेहतर फसल',
     selectLanguage: 'भाषा चुनें',
   },
@@ -231,7 +231,7 @@ const translations = {
     perQuintal: '/క్వింటాల్',
     
     // App
-    appName: 'కిసాన్IQ',
+    appName: 'Smart किसान',
     appTagline: 'స్మార్ట్ వ్యవసాయం, మెరుగైన పంట',
     selectLanguage: 'భాష ఎంచుకోండి',
   },
@@ -303,7 +303,7 @@ const translations = {
     perQuintal: '/குவிண்டால்',
     
     // App
-    appName: 'கிசான்IQ',
+    appName: 'Smart किसान',
     appTagline: 'ஸ்மார்ட் விவசாயம், சிறந்த அறுவடை',
     selectLanguage: 'மொழியைத் தேர்ந்தெடுக்கவும்',
   },
@@ -375,7 +375,7 @@ const translations = {
     perQuintal: '/क्विंटल',
     
     // App
-    appName: 'किसानIQ',
+    appName: 'Smart किसान',
     appTagline: 'स्मार्ट शेती, चांगले पीक',
     selectLanguage: 'भाषा निवडा',
   },
