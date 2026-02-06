@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, MapPin, Phone, Edit, Plus, Leaf, Save, Loader2, CreditCard } from 'lucide-react';
+import { User, MapPin, Phone, Edit, Save, Loader2, CreditCard } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { AvatarUpload } from '@/components/AvatarUpload';
+import { PlotsList } from '@/components/profile/PlotsList';
+import { usePlots } from '@/hooks/usePlots';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -45,29 +47,12 @@ interface FormData {
   farmer_id: string;
 }
 
-const mockPlots = [
-  {
-    id: '1',
-    name: 'Main Field',
-    area: 2.5,
-    soilType: 'Black Cotton',
-    irrigation: 'Borewell',
-    currentCrop: 'Wheat',
-  },
-  {
-    id: '2',
-    name: 'East Plot',
-    area: 1.8,
-    soilType: 'Alluvial',
-    irrigation: 'Canal',
-    currentCrop: 'Chickpea',
-  },
-];
 
 export default function Profile() {
   const { t, language, setLanguage } = useLanguage();
   const { user, signOut } = useAuth();
   const { profile, updateProfile, isLoading } = useProfile();
+  const { plots, totalArea, activeCropsCount, isLoading: plotsLoading } = usePlots();
   const [isEditing, setIsEditing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -393,17 +378,17 @@ export default function Profile() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Total Plots</span>
-                  <span className="font-semibold">{mockPlots.length}</span>
+                  <span className="font-semibold">{plotsLoading ? '...' : plots.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Total Area</span>
                   <span className="font-semibold">
-                    {mockPlots.reduce((sum, p) => sum + p.area, 0).toFixed(1)} ha
+                    {plotsLoading ? '...' : `${totalArea.toFixed(1)} ha`}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Active Crops</span>
-                  <span className="font-semibold">{mockPlots.length}</span>
+                  <span className="font-semibold">{plotsLoading ? '...' : activeCropsCount}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Member Since</span>
@@ -437,59 +422,7 @@ export default function Profile() {
         </div>
 
         {/* Plots Section */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Leaf className="h-5 w-5 text-success" />
-                  My Plots
-                </CardTitle>
-                <CardDescription>Manage your farm plots and crop details</CardDescription>
-              </div>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Plot
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mockPlots.map((plot) => (
-                <div
-                  key={plot.id}
-                  className="p-4 rounded-xl border bg-muted/30 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="font-medium">{plot.name}</h4>
-                      <p className="text-sm text-muted-foreground">{plot.area} hectares</p>
-                    </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Soil Type</p>
-                      <p className="font-medium">{plot.soilType}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Irrigation</p>
-                      <p className="font-medium">{plot.irrigation}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-muted-foreground">Current Crop</p>
-                      <Badge variant="outline" className="mt-1">
-                        🌾 {plot.currentCrop}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <PlotsList />
 
         {/* Danger Zone */}
         <Card className="border-destructive/30">
