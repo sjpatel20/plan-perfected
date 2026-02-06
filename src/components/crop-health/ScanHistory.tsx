@@ -46,14 +46,14 @@ const statusConfig = {
   },
 };
 
-export function ScanHistory() {
+interface ScanHistoryProps {
+  refreshTrigger?: number;
+}
+
+export function ScanHistory({ refreshTrigger }: ScanHistoryProps) {
   const { t } = useLanguage();
   const [scans, setScans] = useState<CropScan[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchScans();
-  }, []);
 
   const fetchScans = async () => {
     try {
@@ -76,6 +76,10 @@ export function ScanHistory() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchScans();
+  }, [refreshTrigger]);
 
   if (loading) {
     return (

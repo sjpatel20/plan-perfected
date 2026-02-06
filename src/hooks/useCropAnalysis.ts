@@ -15,6 +15,7 @@ interface AnalyzeParams {
   imageBase64: string;
   cropName?: string;
   location?: { latitude: number; longitude: number };
+  onScanSaved?: () => void;
 }
 
 export function useCropAnalysis() {
@@ -23,7 +24,7 @@ export function useCropAnalysis() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const analyzeCrop = async ({ imageBase64, cropName, location }: AnalyzeParams) => {
+  const analyzeCrop = async ({ imageBase64, cropName, location, onScanSaved }: AnalyzeParams) => {
     setIsAnalyzing(true);
     setError(null);
     setDiagnosis(null);
@@ -83,6 +84,9 @@ export function useCropAnalysis() {
           ? 'Your crop appears to be healthy!' 
           : `Detected: ${result.disease_name || result.status}`,
       });
+
+      // Notify that scan was saved
+      onScanSaved?.();
 
       return result;
     } catch (err) {

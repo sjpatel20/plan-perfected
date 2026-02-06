@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Leaf } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,9 +13,14 @@ import { cn } from '@/lib/utils';
 export default function CropHealth() {
   const { t } = useLanguage();
   const { analyzeCrop, isAnalyzing, diagnosis, reset } = useCropAnalysis();
+  const [scanRefreshTrigger, setScanRefreshTrigger] = useState(0);
 
   const handleAnalyze = async (imageBase64: string, cropName?: string) => {
-    await analyzeCrop({ imageBase64, cropName });
+    await analyzeCrop({ 
+      imageBase64, 
+      cropName,
+      onScanSaved: () => setScanRefreshTrigger(prev => prev + 1)
+    });
   };
 
   return (
@@ -95,7 +101,7 @@ export default function CropHealth() {
         </div>
 
         {/* Recent Scans */}
-        <ScanHistory />
+        <ScanHistory refreshTrigger={scanRefreshTrigger} />
 
         {/* Disease Library Preview */}
         <Card>
