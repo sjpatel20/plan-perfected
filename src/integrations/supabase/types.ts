@@ -14,7 +14,441 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      advisories: {
+        Row: {
+          audio_url: string | null
+          category: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          message_local: Json | null
+          severity: string | null
+          target_crop: string | null
+          target_region: string | null
+          title: string
+          user_id: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          category: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          message_local?: Json | null
+          severity?: string | null
+          target_crop?: string | null
+          target_region?: string | null
+          title: string
+          user_id?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          message_local?: Json | null
+          severity?: string | null
+          target_crop?: string | null
+          target_region?: string | null
+          title?: string
+          user_id?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      crop_cycles: {
+        Row: {
+          actual_harvest_date: string | null
+          actual_yield_kg: number | null
+          created_at: string
+          crop_name: string
+          crop_variety: string | null
+          current_stage: string | null
+          expected_harvest_date: string | null
+          expected_yield_kg: number | null
+          health_status: string | null
+          id: string
+          notes: string | null
+          plot_id: string
+          season: string | null
+          sowing_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_harvest_date?: string | null
+          actual_yield_kg?: number | null
+          created_at?: string
+          crop_name: string
+          crop_variety?: string | null
+          current_stage?: string | null
+          expected_harvest_date?: string | null
+          expected_yield_kg?: number | null
+          health_status?: string | null
+          id?: string
+          notes?: string | null
+          plot_id: string
+          season?: string | null
+          sowing_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_harvest_date?: string | null
+          actual_yield_kg?: number | null
+          created_at?: string
+          crop_name?: string
+          crop_variety?: string | null
+          current_stage?: string | null
+          expected_harvest_date?: string | null
+          expected_yield_kg?: number | null
+          health_status?: string | null
+          id?: string
+          notes?: string | null
+          plot_id?: string
+          season?: string | null
+          sowing_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crop_cycles_plot_id_fkey"
+            columns: ["plot_id"]
+            isOneToOne: false
+            referencedRelation: "plots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crop_scans: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          crop_cycle_id: string | null
+          diagnosis_result: Json | null
+          disease_detected: string | null
+          id: string
+          image_url: string
+          latitude: number | null
+          longitude: number | null
+          recommendations: string[] | null
+          scan_date: string
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          crop_cycle_id?: string | null
+          diagnosis_result?: Json | null
+          disease_detected?: string | null
+          id?: string
+          image_url: string
+          latitude?: number | null
+          longitude?: number | null
+          recommendations?: string[] | null
+          scan_date?: string
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          crop_cycle_id?: string | null
+          diagnosis_result?: Json | null
+          disease_detected?: string | null
+          id?: string
+          image_url?: string
+          latitude?: number | null
+          longitude?: number | null
+          recommendations?: string[] | null
+          scan_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crop_scans_crop_cycle_id_fkey"
+            columns: ["crop_cycle_id"]
+            isOneToOne: false
+            referencedRelation: "crop_cycles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      govt_schemes: {
+        Row: {
+          application_url: string | null
+          benefits: string | null
+          created_at: string
+          description: string
+          description_local: Json | null
+          eligibility_criteria: string | null
+          id: string
+          is_active: boolean | null
+          ministry: string | null
+          scheme_name: string
+          scheme_name_local: Json | null
+          target_crops: string[] | null
+          target_states: string[] | null
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          application_url?: string | null
+          benefits?: string | null
+          created_at?: string
+          description: string
+          description_local?: Json | null
+          eligibility_criteria?: string | null
+          id?: string
+          is_active?: boolean | null
+          ministry?: string | null
+          scheme_name: string
+          scheme_name_local?: Json | null
+          target_crops?: string[] | null
+          target_states?: string[] | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          application_url?: string | null
+          benefits?: string | null
+          created_at?: string
+          description?: string
+          description_local?: Json | null
+          eligibility_criteria?: string | null
+          id?: string
+          is_active?: boolean | null
+          ministry?: string | null
+          scheme_name?: string
+          scheme_name_local?: Json | null
+          target_crops?: string[] | null
+          target_states?: string[] | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      market_prices: {
+        Row: {
+          arrival_quantity: number | null
+          commodity: string
+          commodity_local: Json | null
+          created_at: string
+          id: string
+          mandi_district: string | null
+          mandi_name: string
+          mandi_state: string
+          max_price: number | null
+          min_price: number | null
+          modal_price: number | null
+          price_date: string
+          price_unit: string | null
+          source: string | null
+        }
+        Insert: {
+          arrival_quantity?: number | null
+          commodity: string
+          commodity_local?: Json | null
+          created_at?: string
+          id?: string
+          mandi_district?: string | null
+          mandi_name: string
+          mandi_state: string
+          max_price?: number | null
+          min_price?: number | null
+          modal_price?: number | null
+          price_date: string
+          price_unit?: string | null
+          source?: string | null
+        }
+        Update: {
+          arrival_quantity?: number | null
+          commodity?: string
+          commodity_local?: Json | null
+          created_at?: string
+          id?: string
+          mandi_district?: string | null
+          mandi_name?: string
+          mandi_state?: string
+          max_price?: number | null
+          min_price?: number | null
+          modal_price?: number | null
+          price_date?: string
+          price_unit?: string | null
+          source?: string | null
+        }
+        Relationships: []
+      }
+      plots: {
+        Row: {
+          area_hectares: number | null
+          created_at: string
+          id: string
+          irrigation_type: string | null
+          latitude: number | null
+          longitude: number | null
+          ownership_type: string | null
+          plot_name: string
+          soil_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          area_hectares?: number | null
+          created_at?: string
+          id?: string
+          irrigation_type?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          ownership_type?: string | null
+          plot_name: string
+          soil_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          area_hectares?: number | null
+          created_at?: string
+          id?: string
+          irrigation_type?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          ownership_type?: string | null
+          plot_name?: string
+          soil_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          district: string | null
+          farmer_id: string | null
+          full_name: string
+          id: string
+          mobile_number: string | null
+          pincode: string | null
+          preferred_language: string | null
+          state: string | null
+          updated_at: string
+          user_id: string
+          village: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          district?: string | null
+          farmer_id?: string | null
+          full_name: string
+          id?: string
+          mobile_number?: string | null
+          pincode?: string | null
+          preferred_language?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id: string
+          village?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          district?: string | null
+          farmer_id?: string | null
+          full_name?: string
+          id?: string
+          mobile_number?: string | null
+          pincode?: string | null
+          preferred_language?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string
+          village?: string | null
+        }
+        Relationships: []
+      }
+      soil_data: {
+        Row: {
+          boron: number | null
+          copper: number | null
+          created_at: string
+          ec: number | null
+          id: string
+          iron: number | null
+          manganese: number | null
+          nitrogen: number | null
+          organic_carbon: number | null
+          ph: number | null
+          phosphorus: number | null
+          plot_id: string
+          potassium: number | null
+          shc_card_number: string | null
+          sulphur: number | null
+          test_date: string
+          zinc: number | null
+        }
+        Insert: {
+          boron?: number | null
+          copper?: number | null
+          created_at?: string
+          ec?: number | null
+          id?: string
+          iron?: number | null
+          manganese?: number | null
+          nitrogen?: number | null
+          organic_carbon?: number | null
+          ph?: number | null
+          phosphorus?: number | null
+          plot_id: string
+          potassium?: number | null
+          shc_card_number?: string | null
+          sulphur?: number | null
+          test_date: string
+          zinc?: number | null
+        }
+        Update: {
+          boron?: number | null
+          copper?: number | null
+          created_at?: string
+          ec?: number | null
+          id?: string
+          iron?: number | null
+          manganese?: number | null
+          nitrogen?: number | null
+          organic_carbon?: number | null
+          ph?: number | null
+          phosphorus?: number | null
+          plot_id?: string
+          potassium?: number | null
+          shc_card_number?: string | null
+          sulphur?: number | null
+          test_date?: string
+          zinc?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "soil_data_plot_id_fkey"
+            columns: ["plot_id"]
+            isOneToOne: false
+            referencedRelation: "plots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
