@@ -18,6 +18,7 @@ import CropHealth from "./pages/CropHealth";
 import Market from "./pages/Market";
 import Schemes from "./pages/Schemes";
 import Profile from "./pages/Profile";
+import Plots from "./pages/Plots";
 import Settings from "./pages/Settings";
 import ExpertChat from "./pages/ExpertChat";
 import NotFound from "./pages/NotFound";
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/weather" element={<ProtectedRoute><Weather /></ProtectedRoute>} />
               <Route path="/crop-health" element={<ProtectedRoute><CropHealth /></ProtectedRoute>} />
               <Route path="/market" element={<ProtectedRoute><Market /></ProtectedRoute>} />
+              <Route path="/plots" element={<ProtectedRoute><Plots /></ProtectedRoute>} />
               <Route path="/expert-chat" element={<ProtectedRoute><ExpertChat /></ProtectedRoute>} />
               <Route path="/schemes" element={<ProtectedRoute><Schemes /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

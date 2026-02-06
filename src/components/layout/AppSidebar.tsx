@@ -8,6 +8,7 @@ import {
   Settings,
   LogOut,
   Sparkles,
+  MapPinned,
 } from 'lucide-react';
 import smartKisanLogo from '@/assets/smart-kisan-logo.jpg';
 import { NavLink } from '@/components/NavLink';
@@ -34,6 +35,7 @@ export function AppSidebar() {
 
   const mainNavItems = [
     { title: t('dashboard'), url: '/', icon: LayoutDashboard },
+    { title: 'My Plots', url: '/plots', icon: MapPinned },
     { title: t('weather'), url: '/weather', icon: Cloud },
     { title: t('cropHealth'), url: '/crop-health', icon: Leaf },
     { title: t('market'), url: '/market', icon: TrendingUp },
