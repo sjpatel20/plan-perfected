@@ -12,8 +12,9 @@ import {
 } from 'lucide-react';
 import smartKisanLogo from '@/assets/smart-kisan-logo.jpg';
 import { NavLink } from '@/components/NavLink';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/hooks/useAuth';
 import {
   Sidebar,
   SidebarContent,
@@ -30,8 +31,15 @@ import {
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useLanguage();
+  const { signOut } = useAuth();
   const collapsed = state === 'collapsed';
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   const mainNavItems = [
     { title: t('dashboard'), url: '/', icon: LayoutDashboard },
@@ -134,7 +142,8 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip={collapsed ? t('logout') : undefined}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
             >
               <LogOut className="h-5 w-5 shrink-0" />
               {!collapsed && <span>{t('logout')}</span>}
