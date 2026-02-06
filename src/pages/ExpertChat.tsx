@@ -117,7 +117,7 @@ export default function ExpertChat() {
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="font-semibold">Expert Chat</h1>
+                <h1 className="font-semibold">AIkosh</h1>
                 <p className="text-xs text-muted-foreground">AI-powered agricultural advisor</p>
               </div>
             </div>
