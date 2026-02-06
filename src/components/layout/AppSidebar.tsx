@@ -58,7 +58,7 @@ export function AppSidebar() {
               <img 
                 src={smartKisanLogo} 
                 alt="Smart किसान" 
-                className="w-10 h-10 object-contain rounded-xl"
+                className="w-14 h-14 object-contain rounded-xl"
               />
               <div>
                 <h2 className="font-bold text-lg text-sidebar-foreground">{t('appName')}</h2>
