@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -23,7 +24,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <header className="h-16 border-b bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-40">
             <div className="flex items-center gap-3">
               <SidebarTrigger className="lg:hidden" />
-              <div className="flex items-center gap-2">
+              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <img 
                   src={smartKisanLogo} 
                   alt="Smart किसान" 
@@ -33,7 +34,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <h1 className="font-bold text-lg text-foreground">{t('appName')}</h1>
                   <p className="text-xs text-muted-foreground">{t('appTagline')}</p>
                 </div>
-              </div>
+              </Link>
             </div>
             
             <div className="flex items-center gap-2">
