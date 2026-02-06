@@ -7,7 +7,7 @@ import {
   User,
   Settings,
   LogOut,
-  MessageSquare,
+  Sparkles,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -36,7 +36,7 @@ export function AppSidebar() {
     { title: t('weather'), url: '/weather', icon: Cloud },
     { title: t('cropHealth'), url: '/crop-health', icon: Leaf },
     { title: t('market'), url: '/market', icon: TrendingUp },
-    { title: 'Expert Chat', url: '/expert-chat', icon: MessageSquare },
+    { title: 'AIkosh', url: '/expert-chat', icon: Sparkles },
     { title: t('schemes'), url: '/schemes', icon: FileText },
   ];
 
