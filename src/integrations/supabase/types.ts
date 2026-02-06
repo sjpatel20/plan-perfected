@@ -333,6 +333,101 @@ export type Database = {
         }
         Relationships: []
       }
+      price_alerts: {
+        Row: {
+          alert_type: string
+          commodity: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_checked_at: string | null
+          last_known_price: number | null
+          mandi_name: string | null
+          mandi_state: string | null
+          threshold_percentage: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_type?: string
+          commodity: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_checked_at?: string | null
+          last_known_price?: number | null
+          mandi_name?: string | null
+          mandi_state?: string | null
+          threshold_percentage?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          commodity?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_checked_at?: string | null
+          last_known_price?: number | null
+          mandi_name?: string | null
+          mandi_state?: string | null
+          threshold_percentage?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      price_notifications: {
+        Row: {
+          alert_id: string
+          change_percentage: number
+          change_type: string
+          commodity: string
+          created_at: string
+          id: string
+          is_read: boolean
+          mandi_name: string | null
+          new_price: number
+          old_price: number
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          change_percentage: number
+          change_type: string
+          commodity: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          mandi_name?: string | null
+          new_price: number
+          old_price: number
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          change_percentage?: number
+          change_type?: string
+          commodity?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          mandi_name?: string | null
+          new_price?: number
+          old_price?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_notifications_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "price_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
