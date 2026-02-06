@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, MapPin, Phone, Mail, Edit, Plus, Leaf, Save, Loader2, CreditCard } from 'lucide-react';
+import { User, MapPin, Phone, Edit, Plus, Leaf, Save, Loader2, CreditCard } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { AvatarUpload } from '@/components/AvatarUpload';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -68,6 +69,7 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const { profile, updateProfile, isLoading } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   const [formData, setFormData] = useState<FormData>({
@@ -92,6 +94,7 @@ export default function Profile() {
         pincode: profile.pincode || '',
         farmer_id: profile.farmer_id || '',
       });
+      setAvatarUrl(profile.avatar_url);
     }
   }, [profile]);
 
@@ -128,6 +131,7 @@ export default function Profile() {
         village: formData.village || null,
         pincode: formData.pincode || null,
         farmer_id: formData.farmer_id || null,
+        avatar_url: avatarUrl,
       });
       
       toast.success('Profile updated successfully!');
@@ -151,6 +155,7 @@ export default function Profile() {
         farmer_id: profile.farmer_id || '',
       });
     }
+    setAvatarUrl(profile?.avatar_url || null);
     setErrors({});
     setIsEditing(false);
   };
@@ -211,9 +216,12 @@ export default function Profile() {
             <CardContent className="space-y-6">
               {/* Avatar and name */}
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-3xl">
-                  👨‍🌾
-                </div>
+                <AvatarUpload
+                  currentAvatarUrl={avatarUrl}
+                  onAvatarChange={setAvatarUrl}
+                  fallback="👨‍🌾"
+                  disabled={!isEditing}
+                />
                 <div>
                   <h2 className="text-xl font-semibold">{formData.full_name || 'Farmer'}</h2>
                   <p className="text-muted-foreground text-sm">{user?.email}</p>
@@ -222,6 +230,11 @@ export default function Profile() {
                       <CreditCard className="h-3 w-3 mr-1" />
                       {formData.farmer_id}
                     </Badge>
+                  )}
+                  {isEditing && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Hover over avatar to change
+                    </p>
                   )}
                 </div>
               </div>
