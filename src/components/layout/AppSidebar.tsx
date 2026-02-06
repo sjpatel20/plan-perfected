@@ -36,7 +36,7 @@ export function AppSidebar() {
     { title: t('weather'), url: '/weather', icon: Cloud },
     { title: t('cropHealth'), url: '/crop-health', icon: Leaf },
     { title: t('market'), url: '/market', icon: TrendingUp },
-    { title: 'Smart किसान', url: '/expert-chat', icon: Sparkles },
+    { title: 'AIkosh', url: '/expert-chat', icon: Sparkles },
     { title: t('schemes'), url: '/schemes', icon: FileText },
   ];
 

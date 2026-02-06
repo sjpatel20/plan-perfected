@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { MessageSquare, Menu, Leaf, Cloud, Banknote, FileText } from 'lucide-react';
+import { MessageSquare, Menu, Sparkles, Leaf, Cloud, Banknote, FileText } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import { ChatInput } from '@/components/expert-chat/ChatInput';
 import { ConversationList } from '@/components/expert-chat/ConversationList';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
-import smartKisanLogo from '@/assets/smart-kisan-logo.png';
 
 const QUICK_PROMPTS = [
   { icon: Leaf, label: 'Crop Disease', prompt: 'My wheat leaves are turning yellow with brown spots. What could be the problem?' },
@@ -114,13 +113,11 @@ export default function ExpertChat() {
             </Sheet>
             
             <div className="flex items-center gap-2">
-              <img 
-                src={smartKisanLogo} 
-                alt="Smart किसान" 
-                className="h-10 w-10 object-contain"
-              />
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-success to-primary flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
               <div>
-                <h1 className="font-semibold">Smart किसान</h1>
+                <h1 className="font-semibold">AIkosh</h1>
                 <p className="text-xs text-muted-foreground">AI-powered agricultural advisor</p>
               </div>
             </div>
