@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
+import smartKisanLogo from '@/assets/smart-kisan-logo.jpg';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -21,9 +22,11 @@ export function AppLayout({ children }: AppLayoutProps) {
             <div className="flex items-center gap-3">
               <SidebarTrigger className="lg:hidden" />
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">🌾</span>
-                </div>
+                <img 
+                  src={smartKisanLogo} 
+                  alt="Smart किसान" 
+                  className="w-8 h-8 object-contain rounded-lg"
+                />
                 <div className="hidden sm:block">
                   <h1 className="font-bold text-lg text-foreground">{t('appName')}</h1>
                   <p className="text-xs text-muted-foreground">{t('appTagline')}</p>
