@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useLanguage } from '@/contexts/LanguageContext';
 import smartKisanLogo from '@/assets/smart-kisan-logo.jpg';
 
@@ -34,7 +35,8 @@ export function AppLayout({ children }: AppLayoutProps) {
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
               <LanguageSelector />
             </div>
           </header>
