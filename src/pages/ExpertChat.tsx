@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { MessageSquare, Menu, Sparkles, Leaf, Cloud, Banknote, FileText } from 'lucide-react';
+import { MessageSquare, Menu, Sparkles, Leaf, Cloud, Banknote, FileText, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ export default function ExpertChat() {
   const conversationId = searchParams.get('id') || undefined;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarCollapsed, setDesktopSidebarCollapsed] = useState(false);
 
   const {
     conversations,
@@ -93,7 +94,12 @@ export default function ExpertChat() {
     <AppLayout>
       <div className="h-[calc(100vh-4rem)] flex">
         {/* Desktop Sidebar */}
-        <div className="hidden md:flex w-72 border-r bg-muted/30 flex-col">
+        <div
+          className={cn(
+            'hidden md:flex border-r bg-muted/30 flex-col transition-all duration-300',
+            desktopSidebarCollapsed ? 'w-0 overflow-hidden' : 'w-72'
+          )}
+        >
           {ConversationSidebar}
         </div>
 
@@ -101,6 +107,7 @@ export default function ExpertChat() {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <div className="flex items-center gap-3 p-4 border-b bg-background">
+            {/* Mobile menu trigger */}
             <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden">
@@ -111,6 +118,21 @@ export default function ExpertChat() {
                 {ConversationSidebar}
               </SheetContent>
             </Sheet>
+
+            {/* Desktop sidebar toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:flex"
+              onClick={() => setDesktopSidebarCollapsed(!desktopSidebarCollapsed)}
+              aria-label={desktopSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {desktopSidebarCollapsed ? (
+                <PanelLeft className="h-5 w-5" />
+              ) : (
+                <PanelLeftClose className="h-5 w-5" />
+              )}
+            </Button>
             
             <div className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-success to-primary flex items-center justify-center">
