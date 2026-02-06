@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, TrendingDown, Minus, Search, MapPin, Filter, ArrowUpDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Search, MapPin, Filter, Bell } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { CreateAlertDialog } from '@/components/market/CreateAlertDialog';
+import { PriceAlertsList } from '@/components/market/PriceAlertsList';
+import { NotificationBell } from '@/components/market/NotificationBell';
 
 // Mock market data
 const marketPrices = [
@@ -66,9 +69,13 @@ export default function Market() {
               Live mandi prices across India
             </p>
           </div>
-          <Badge variant="outline" className="w-fit">
-            {t('lastUpdated')}: {new Date().toLocaleTimeString()}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            <CreateAlertDialog />
+            <Badge variant="outline" className="w-fit">
+              {t('lastUpdated')}: {new Date().toLocaleTimeString()}
+            </Badge>
+          </div>
         </div>
 
         {/* Nearby Mandis */}
@@ -261,6 +268,9 @@ export default function Market() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Price Alerts Section */}
+        <PriceAlertsList />
       </div>
     </AppLayout>
   );
