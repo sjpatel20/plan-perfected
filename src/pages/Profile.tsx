@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { User, MapPin, Phone, Edit, Save, Loader2, CreditCard } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { User, MapPin, Phone, Edit, Save, Loader2, CreditCard, ArrowRight, Leaf } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,6 @@ import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { AvatarUpload } from '@/components/AvatarUpload';
-import { PlotsList } from '@/components/profile/PlotsList';
 import { usePlots } from '@/hooks/usePlots';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -372,8 +372,19 @@ export default function Profile() {
           {/* Stats Card */}
           <div className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Farm Summary</CardTitle>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Leaf className="h-5 w-5 text-success" />
+                    Farm Summary
+                  </CardTitle>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/plots">
+                      Manage
+                      <ArrowRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -420,9 +431,6 @@ export default function Profile() {
             </Card>
           </div>
         </div>
-
-        {/* Plots Section */}
-        <PlotsList />
 
         {/* Danger Zone */}
         <Card className="border-destructive/30">

@@ -5,6 +5,7 @@ import { AlertCard, Alert } from '@/components/dashboard/AlertCard';
 import { QuickActionCard } from '@/components/dashboard/QuickActionCard';
 import { MarketPriceCard, CropPrice } from '@/components/dashboard/MarketPriceCard';
 import { ForecastCard } from '@/components/dashboard/ForecastCard';
+import { PlotsSummaryCard } from '@/components/dashboard/PlotsSummaryCard';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 // Mock data - will be replaced with real API data
@@ -153,50 +154,10 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Market Prices */}
+        {/* Market Prices & Plots */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <MarketPriceCard prices={mockPrices} />
-          
-          {/* Crop Status Summary */}
-          <div className="bg-gradient-to-br from-primary/10 via-success/10 to-accent/10 rounded-2xl p-6 border">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <Leaf className="h-5 w-5 text-primary" />
-              {t('cropStatus')}
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-card rounded-lg">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">🌾</span>
-                  <div>
-                    <p className="font-medium">Wheat (Rabi)</p>
-                    <p className="text-sm text-muted-foreground">Sown: 15 Jan 2026</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/20 text-success">
-                    {t('healthy')}
-                  </span>
-                  <p className="text-sm text-muted-foreground mt-1">Stage: Tillering</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-card rounded-lg">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">🫛</span>
-                  <div>
-                    <p className="font-medium">Chickpea (Chana)</p>
-                    <p className="text-sm text-muted-foreground">Sown: 20 Oct 2025</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning/20 text-warning">
-                    Monitor
-                  </span>
-                  <p className="text-sm text-muted-foreground mt-1">Stage: Flowering</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <PlotsSummaryCard />
         </div>
       </div>
     </AppLayout>
