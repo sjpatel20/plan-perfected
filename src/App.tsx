@@ -12,6 +12,7 @@ import { ThemeProvider } from "next-themes";
 // Pages
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import Weather from "./pages/Weather";
 import CropHealth from "./pages/CropHealth";
 import Market from "./pages/Market";
@@ -37,7 +38,10 @@ const App = () => (
               {/* Public routes */}
               <Route path="/auth" element={<Auth />} />
               
-              {/* Protected routes */}
+              {/* Onboarding (requires auth but not complete profile) */}
+              <Route path="/onboarding" element={<ProtectedRoute requireCompleteProfile={false}><Onboarding /></ProtectedRoute>} />
+              
+              {/* Protected routes (require complete profile) */}
               <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/weather" element={<ProtectedRoute><Weather /></ProtectedRoute>} />
               <Route path="/crop-health" element={<ProtectedRoute><CropHealth /></ProtectedRoute>} />
