@@ -1,10 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+// Input validation schema
+const MessageSchema = z.object({
+  role: z.enum(["user", "assistant", "system"]),
+  content: z.string().min(1).max(10000),
+});
+
+const ChatSchema = z.object({
+  messages: z.array(MessageSchema).min(1).max(50),
+  conversationId: z.string().uuid().optional(),
+});
 
 const SYSTEM_PROMPT = `You are Kisan Mitra's Expert Agricultural Advisor - an AI assistant specialized in helping Indian farmers with:
 
@@ -38,14 +50,20 @@ serve(async (req) => {
       });
     }
 
-    const { messages, conversationId } = await req.json();
-
-    if (!messages || !Array.isArray(messages)) {
-      return new Response(JSON.stringify({ error: "Messages array required" }), {
+    // Parse and validate input
+    let validatedInput;
+    try {
+      const rawBody = await req.json();
+      validatedInput = ChatSchema.parse(rawBody);
+    } catch (validationError) {
+      console.error("Input validation failed:", validationError);
+      return new Response(JSON.stringify({ error: "Invalid input format. Messages must be an array with valid role and content." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const { messages, conversationId } = validatedInput;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -104,7 +122,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Expert chat error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

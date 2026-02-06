@@ -1,9 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Input validation schema
+const WeatherSchema = z.object({
+  lat: z.number().min(-90).max(90).default(22.7196),
+  lon: z.number().min(-180).max(180).default(75.8577),
+  locationName: z.string().max(200).default("Indore, Madhya Pradesh"),
+});
 
 type WeatherCondition = "sunny" | "cloudy" | "rainy" | "stormy";
 
@@ -143,8 +151,23 @@ serve(async (req) => {
       );
     }
 
-    const { lat = 22.7196, lon = 75.8577, locationName = "Indore, Madhya Pradesh" } =
-      await req.json().catch(() => ({}));
+    // Parse and validate input
+    let validatedInput;
+    try {
+      const rawBody = await req.json().catch(() => ({}));
+      validatedInput = WeatherSchema.parse(rawBody);
+    } catch (validationError) {
+      console.error("Input validation failed:", validationError);
+      return new Response(
+        JSON.stringify({ error: "Invalid input. lat must be between -90 and 90, lon between -180 and 180." }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const { lat, lon, locationName } = validatedInput;
 
     console.log(`Fetching weather for: ${locationName} (${lat}, ${lon})`);
 
@@ -275,7 +298,7 @@ serve(async (req) => {
     console.error("Weather fetch error:", error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "Failed to fetch weather data",
+        error: "Failed to fetch weather data",
       }),
       {
         status: 500,

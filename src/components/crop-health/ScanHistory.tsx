@@ -20,6 +20,7 @@ interface CropScan {
   confidence_score: number | null;
   image_url: string;
   diagnosis_result: DiagnosisResultJson | null;
+  signedImageUrl?: string;
 }
 
 const statusConfig = {
@@ -50,6 +51,26 @@ interface ScanHistoryProps {
   refreshTrigger?: number;
 }
 
+// Helper to extract file path from a storage URL
+function extractFilePath(imageUrl: string): string | null {
+  if (!imageUrl) return null;
+  
+  // If it's already a signed URL, extract the path
+  try {
+    const url = new URL(imageUrl);
+    const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(?:sign|public)\/crop-scans\/(.+)/);
+    if (pathMatch) {
+      return decodeURIComponent(pathMatch[1].split('?')[0]);
+    }
+  } catch {
+    // If it's not a valid URL, it might be a direct path
+    if (!imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+  }
+  return null;
+}
+
 export function ScanHistory({ refreshTrigger }: ScanHistoryProps) {
   const { t } = useLanguage();
   const [scans, setScans] = useState<CropScan[]>([]);
@@ -64,12 +85,35 @@ export function ScanHistory({ refreshTrigger }: ScanHistoryProps) {
         .limit(6);
 
       if (error) throw error;
+      
       // Cast the Json type to our expected interface
       const typedScans = (data || []).map(scan => ({
         ...scan,
         diagnosis_result: scan.diagnosis_result as DiagnosisResultJson | null
       }));
-      setScans(typedScans);
+
+      // Generate signed URLs for each scan
+      const scansWithSignedUrls = await Promise.all(
+        typedScans.map(async (scan) => {
+          // Check if the image_url is already a signed URL or if we need to generate one
+          const filePath = extractFilePath(scan.image_url);
+          
+          if (filePath) {
+            const { data: signedUrlData, error: signedError } = await supabase.storage
+              .from('crop-scans')
+              .createSignedUrl(filePath, 60 * 60); // 1 hour validity
+
+            if (!signedError && signedUrlData?.signedUrl) {
+              return { ...scan, signedImageUrl: signedUrlData.signedUrl };
+            }
+          }
+          
+          // Fallback to original URL if signed URL generation fails
+          return { ...scan, signedImageUrl: scan.image_url };
+        })
+      );
+
+      setScans(scansWithSignedUrls);
     } catch (err) {
       console.error('Error fetching scans:', err);
     } finally {
@@ -160,9 +204,12 @@ export function ScanHistory({ refreshTrigger }: ScanHistoryProps) {
                 <div className="flex gap-3">
                   <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden shrink-0">
                     <img
-                      src={scan.image_url || '/placeholder.svg'}
+                      src={scan.signedImageUrl || scan.image_url || '/placeholder.svg'}
                       alt="Crop scan"
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = '/placeholder.svg';
+                      }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
