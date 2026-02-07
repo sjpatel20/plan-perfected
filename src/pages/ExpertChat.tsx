@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { MessageSquare, Menu, Sparkles, Leaf, Cloud, Banknote, FileText, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { MessageSquare, Menu, Sparkles, Leaf, Cloud, Banknote, FileText, PanelLeftClose, PanelLeft, Wrench, TrendingUp, Search, Sprout } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
 import { useExpertChat } from '@/hooks/useExpertChat';
 import { ChatMessage } from '@/components/expert-chat/ChatMessage';
 import { ChatInput } from '@/components/expert-chat/ChatInput';
@@ -15,10 +16,24 @@ import { cn } from '@/lib/utils';
 
 const QUICK_PROMPTS = [
   { icon: Leaf, label: 'Crop Disease', prompt: 'My wheat leaves are turning yellow with brown spots. What could be the problem?' },
-  { icon: Cloud, label: 'Weather Advice', prompt: 'Heavy rain is expected next week. What precautions should I take for my standing crop?' },
-  { icon: Banknote, label: 'Government Schemes', prompt: 'What are the latest government schemes for farmers that I can apply for?' },
-  { icon: FileText, label: 'Best Practices', prompt: 'What is the best time and method to sow wheat in North India?' },
+  { icon: Cloud, label: 'Weather Advice', prompt: 'What is the weather forecast for Indore, Madhya Pradesh? Should I irrigate my field this week?' },
+  { icon: Banknote, label: 'Market Prices', prompt: 'What are the current mandi prices for soybean in Madhya Pradesh?' },
+  { icon: FileText, label: 'Government Schemes', prompt: 'What government schemes are available for crop insurance?' },
 ];
+
+const TOOL_ICONS: Record<string, typeof Wrench> = {
+  get_weather: Cloud,
+  get_market_prices: TrendingUp,
+  search_schemes: Search,
+  analyze_crop_advice: Sprout,
+};
+
+const TOOL_LABELS: Record<string, string> = {
+  get_weather: 'Weather',
+  get_market_prices: 'Prices',
+  search_schemes: 'Schemes',
+  analyze_crop_advice: 'Crop Advice',
+};
 
 export default function ExpertChat() {
   const { t } = useLanguage();
@@ -36,6 +51,7 @@ export default function ExpertChat() {
     isLoadingMessages,
     isStreaming,
     streamingContent,
+    toolsUsed,
     createConversation,
     sendMessage,
     deleteConversation,
@@ -140,7 +156,7 @@ export default function ExpertChat() {
               </div>
               <div>
                 <h1 className="font-semibold">AIkosh</h1>
-                <p className="text-xs text-muted-foreground">AI-powered agricultural advisor</p>
+                <p className="text-xs text-muted-foreground">AI-powered agricultural agent</p>
               </div>
             </div>
           </div>
@@ -153,21 +169,37 @@ export default function ExpertChat() {
                   <div className="h-16 w-16 rounded-full bg-gradient-to-br from-success to-primary flex items-center justify-center mx-auto mb-4">
                     <MessageSquare className="h-8 w-8 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold mb-2">Ask an Expert</h2>
-                  <p className="text-muted-foreground">
-                    Get instant guidance on crop management, weather, government schemes, and more.
+                  <h2 className="text-2xl font-bold mb-2">Ask AIkosh</h2>
+                  <p className="text-muted-foreground mb-4">
+                    Your AI-powered farming assistant with access to real-time weather, market prices, and government schemes.
                   </p>
+                  
+                  {/* Capability badges */}
+                  <div className="flex flex-wrap justify-center gap-2 mb-8">
+                    <Badge variant="secondary" className="gap-1">
+                      <Cloud className="h-3 w-3" /> Weather
+                    </Badge>
+                    <Badge variant="secondary" className="gap-1">
+                      <TrendingUp className="h-3 w-3" /> Market Prices
+                    </Badge>
+                    <Badge variant="secondary" className="gap-1">
+                      <Search className="h-3 w-3" /> Govt Schemes
+                    </Badge>
+                    <Badge variant="secondary" className="gap-1">
+                      <Sprout className="h-3 w-3" /> Crop Advice
+                    </Badge>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {QUICK_PROMPTS.map((item) => (
                     <Card
                       key={item.label}
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      className="cursor-pointer hover:bg-muted/50 transition-colors group"
                       onClick={() => handleQuickPrompt(item.prompt)}
                     >
                       <CardContent className="p-4 flex items-start gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                           <item.icon className="h-4 w-4 text-primary" />
                         </div>
                         <div>
@@ -181,11 +213,40 @@ export default function ExpertChat() {
               </div>
             ) : (
               <div className="max-w-3xl mx-auto space-y-4">
+                {/* Show tools used indicator after response completes */}
+                {toolsUsed.length > 0 && !isStreaming && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground px-4 py-2 bg-muted/30 rounded-lg">
+                    <Wrench className="h-3 w-3" />
+                    <span>Tools used:</span>
+                    {toolsUsed.map((tool) => {
+                      const Icon = TOOL_ICONS[tool] || Wrench;
+                      return (
+                        <Badge key={tool} variant="outline" className="gap-1 text-xs">
+                          <Icon className="h-3 w-3" />
+                          {TOOL_LABELS[tool] || tool}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
+                
                 {messages.map((msg) => (
                   <ChatMessage key={msg.id} role={msg.role} content={msg.content} />
                 ))}
-                {isStreaming && streamingContent && (
-                  <ChatMessage role="assistant" content={streamingContent} isStreaming />
+                
+                {/* Streaming indicator with tool use */}
+                {isStreaming && (
+                  <>
+                    {toolsUsed.length > 0 && !streamingContent && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground px-4 py-3 bg-muted/30 rounded-lg animate-pulse">
+                        <Wrench className="h-4 w-4 animate-spin" />
+                        <span>Fetching data from {toolsUsed.map(t => TOOL_LABELS[t] || t).join(', ')}...</span>
+                      </div>
+                    )}
+                    {streamingContent && (
+                      <ChatMessage role="assistant" content={streamingContent} isStreaming />
+                    )}
+                  </>
                 )}
                 <div ref={messagesEndRef} />
               </div>
@@ -198,10 +259,10 @@ export default function ExpertChat() {
               <ChatInput
                 onSend={handleSendMessage}
                 isLoading={isStreaming}
-                placeholder="Ask about crops, weather, schemes, best practices..."
+                placeholder="Ask about weather, prices, schemes, crop advice..."
               />
               <p className="text-xs text-center text-muted-foreground mt-2">
-                Kisan Mitra Expert provides general guidance. For critical decisions, consult local KVK.
+                AIkosh connects to real data sources for accurate, up-to-date information.
               </p>
             </div>
           </div>

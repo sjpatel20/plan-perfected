@@ -26,6 +26,7 @@ export function useExpertChat(conversationId?: string) {
   const queryClient = useQueryClient();
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
+  const [toolsUsed, setToolsUsed] = useState<string[]>([]);
 
   // Fetch conversations
   const {
@@ -117,7 +118,7 @@ export function useExpertChat(conversationId?: string) {
     },
   });
 
-  // Send message with streaming response
+  // Send message with agentic streaming response
   const sendMessage = useCallback(async (content: string) => {
     if (!conversationId) return;
 
@@ -152,12 +153,14 @@ export function useExpertChat(conversationId?: string) {
 
     setIsStreaming(true);
     setStreamingContent('');
+    setToolsUsed([]);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
+      // Use the new agentic endpoint
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/expert-chat`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/expert-chat-agent`,
         {
           method: 'POST',
           headers: {
@@ -172,6 +175,18 @@ export function useExpertChat(conversationId?: string) {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to get response');
+      }
+
+      // Check for tool calls header
+      const toolCallsHeader = response.headers.get('X-Tool-Calls');
+      if (toolCallsHeader) {
+        try {
+          const tools = JSON.parse(toolCallsHeader);
+          setToolsUsed(tools);
+          console.log('Agent used tools:', tools);
+        } catch (e) {
+          console.error('Failed to parse tool calls header:', e);
+        }
       }
 
       const reader = response.body?.getReader();
@@ -271,6 +286,7 @@ export function useExpertChat(conversationId?: string) {
     isLoadingMessages,
     isStreaming,
     streamingContent,
+    toolsUsed,
     createConversation,
     sendMessage,
     deleteConversation,
