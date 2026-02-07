@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { User, MapPin, Phone, Edit, Save, Loader2, CreditCard, ArrowRight, Leaf } from 'lucide-react';
+import { User, MapPin, Phone, Save, Loader2, Leaf, Mail } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage, LANGUAGES, Language } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,7 +24,8 @@ const INDIAN_STATES = [
   'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
 ];
 
-// Validation schema
+const FARMING_TYPES = ['Organic', 'Traditional', 'Mixed', 'Hydroponic', 'Precision'];
+
 const profileSchema = z.object({
   full_name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   mobile_number: z.string().regex(/^\d{10}$/, 'Mobile number must be 10 digits').optional().or(z.literal('')),
@@ -45,15 +44,16 @@ interface FormData {
   village: string;
   pincode: string;
   farmer_id: string;
+  farm_name: string;
+  farming_type: string;
+  total_land_size: string;
 }
-
 
 export default function Profile() {
   const { t, language, setLanguage } = useLanguage();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { profile, updateProfile, isLoading } = useProfile();
-  const { plots, totalArea, activeCropsCount, isLoading: plotsLoading } = usePlots();
-  const [isEditing, setIsEditing] = useState(false);
+  const { totalArea } = usePlots();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
@@ -65,9 +65,11 @@ export default function Profile() {
     village: '',
     pincode: '',
     farmer_id: '',
+    farm_name: '',
+    farming_type: 'organic',
+    total_land_size: '',
   });
 
-  // Sync form data with profile when loaded
   useEffect(() => {
     if (profile) {
       setFormData({
@@ -78,21 +80,22 @@ export default function Profile() {
         village: profile.village || '',
         pincode: profile.pincode || '',
         farmer_id: profile.farmer_id || '',
+        farm_name: '',
+        farming_type: 'organic',
+        total_land_size: totalArea.toFixed(1),
       });
       setAvatarUrl(profile.avatar_url);
     }
-  }, [profile]);
+  }, [profile, totalArea]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user types
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
   const handleSave = async () => {
-    // Validate with zod
     const result = profileSchema.safeParse(formData);
     
     if (!result.success) {
@@ -120,29 +123,10 @@ export default function Profile() {
       });
       
       toast.success('Profile updated successfully!');
-      setIsEditing(false);
       setErrors({});
     } catch (error: any) {
       toast.error(error.message || 'Failed to update profile');
     }
-  };
-
-  const handleCancel = () => {
-    // Reset form data to original profile
-    if (profile) {
-      setFormData({
-        full_name: profile.full_name || '',
-        mobile_number: profile.mobile_number || '',
-        state: profile.state || '',
-        district: profile.district || '',
-        village: profile.village || '',
-        pincode: profile.pincode || '',
-        farmer_id: profile.farmer_id || '',
-      });
-    }
-    setAvatarUrl(profile?.avatar_url || null);
-    setErrors({});
-    setIsEditing(false);
   };
 
   if (isLoading) {
@@ -155,294 +139,167 @@ export default function Profile() {
     );
   }
 
+  const location = [formData.village, formData.district].filter(Boolean).join(', ') || 'Not set';
+
   return (
     <AppLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
-              <User className="h-8 w-8 text-primary" />
-              {t('profile')}
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Manage your farm profile and settings
-            </p>
-          </div>
-          {!isEditing ? (
-            <Button onClick={() => setIsEditing(true)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Profile
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleCancel}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={updateProfile.isPending}>
-                {updateProfile.isPending ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4 mr-2" />
-                )}
-                Save
-              </Button>
-            </div>
-          )}
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            My Profile
+          </h1>
+          <p className="text-muted-foreground mt-1">manage_profile</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile Card */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Profile Display Card */}
           <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-              <CardDescription>Your basic information and contact details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Avatar and name */}
-              <div className="flex items-center gap-4">
+            <CardContent className="p-6 flex flex-col items-center text-center">
+              <div className="mt-4">
                 <AvatarUpload
                   currentAvatarUrl={avatarUrl}
                   onAvatarChange={setAvatarUrl}
-                  fallback="👨‍🌾"
-                  disabled={!isEditing}
+                  fallback={formData.full_name?.charAt(0)?.toUpperCase() || 'F'}
+                  disabled={false}
                 />
-                <div>
-                  <h2 className="text-xl font-semibold">{formData.full_name || 'Farmer'}</h2>
-                  <p className="text-muted-foreground text-sm">{user?.email}</p>
-                  {formData.farmer_id && (
-                    <Badge variant="outline" className="text-xs mt-1">
-                      <CreditCard className="h-3 w-3 mr-1" />
-                      {formData.farmer_id}
-                    </Badge>
-                  )}
-                  {isEditing && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Hover over avatar to change
-                    </p>
-                  )}
-                </div>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="full_name">Full Name *</Label>
-                  <Input
-                    id="full_name"
-                    value={formData.full_name}
-                    onChange={(e) => handleInputChange('full_name', e.target.value)}
-                    disabled={!isEditing}
-                    className={errors.full_name ? 'border-destructive' : ''}
-                  />
-                  {errors.full_name && (
-                    <p className="text-xs text-destructive">{errors.full_name}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="mobile_number">Mobile Number</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="mobile_number"
-                      value={formData.mobile_number}
-                      onChange={(e) => handleInputChange('mobile_number', e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      disabled={!isEditing}
-                      className={`pl-10 ${errors.mobile_number ? 'border-destructive' : ''}`}
-                      placeholder="10-digit mobile number"
-                    />
-                  </div>
-                  {errors.mobile_number && (
-                    <p className="text-xs text-destructive">{errors.mobile_number}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="farmer_id">Farmer ID / Kisan ID</Label>
-                  <div className="relative">
-                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="farmer_id"
-                      value={formData.farmer_id}
-                      onChange={(e) => handleInputChange('farmer_id', e.target.value)}
-                      disabled={!isEditing}
-                      className={`pl-10 ${errors.farmer_id ? 'border-destructive' : ''}`}
-                      placeholder="Government farmer ID"
-                    />
-                  </div>
-                  {errors.farmer_id && (
-                    <p className="text-xs text-destructive">{errors.farmer_id}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="language">{t('selectLanguage')}</Label>
-                  <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGES.map((lang) => (
-                        <SelectItem key={lang.code} value={lang.code}>
-                          {lang.nativeName} ({lang.name})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <h3 className="font-medium mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-semibold mt-4">{formData.full_name || 'Farmer'}</h2>
+              <p className="text-muted-foreground text-sm">{user?.email}</p>
+              
+              <div className="mt-6 space-y-3 w-full text-left">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4" />
-                  Location Details
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State *</Label>
-                    {isEditing ? (
-                      <Select 
-                        value={formData.state} 
-                        onValueChange={(v) => handleInputChange('state', v)}
-                      >
-                        <SelectTrigger className={errors.state ? 'border-destructive' : ''}>
-                          <SelectValue placeholder="Select your state" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {INDIAN_STATES.map((state) => (
-                            <SelectItem key={state} value={state}>
-                              {state}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input
-                        id="state"
-                        value={formData.state}
-                        disabled
-                      />
-                    )}
-                    {errors.state && (
-                      <p className="text-xs text-destructive">{errors.state}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="district">District *</Label>
-                    <Input
-                      id="district"
-                      value={formData.district}
-                      onChange={(e) => handleInputChange('district', e.target.value)}
-                      disabled={!isEditing}
-                      className={errors.district ? 'border-destructive' : ''}
-                    />
-                    {errors.district && (
-                      <p className="text-xs text-destructive">{errors.district}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="village">Village / Town</Label>
-                    <Input
-                      id="village"
-                      value={formData.village}
-                      onChange={(e) => handleInputChange('village', e.target.value)}
-                      disabled={!isEditing}
-                      className={errors.village ? 'border-destructive' : ''}
-                    />
-                    {errors.village && (
-                      <p className="text-xs text-destructive">{errors.village}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="pincode">Pincode</Label>
-                    <Input
-                      id="pincode"
-                      value={formData.pincode}
-                      onChange={(e) => handleInputChange('pincode', e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      disabled={!isEditing}
-                      className={errors.pincode ? 'border-destructive' : ''}
-                      placeholder="6-digit pincode"
-                    />
-                    {errors.pincode && (
-                      <p className="text-xs text-destructive">{errors.pincode}</p>
-                    )}
-                  </div>
+                  <span>{location}</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <Leaf className="h-4 w-4" />
+                  <span>{formData.farming_type || 'organic'}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Stats Card */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Leaf className="h-5 w-5 text-success" />
-                    Farm Summary
-                  </CardTitle>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/plots">
-                      Manage
-                      <ArrowRight className="h-4 w-4 ml-1" />
-                    </Link>
-                  </Button>
+          {/* Edit Profile Form */}
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle className="text-lg">Edit Profile</CardTitle>
+              <CardDescription>update_account_details</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Full Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="full_name">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="full_name"
+                      value={formData.full_name}
+                      onChange={(e) => handleInputChange('full_name', e.target.value)}
+                      className={`pl-10 ${errors.full_name ? 'border-destructive' : ''}`}
+                    />
+                  </div>
+                  {errors.full_name && (
+                    <p className="text-xs text-destructive">{errors.full_name}</p>
+                  )}
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Total Plots</span>
-                  <span className="font-semibold">{plotsLoading ? '...' : plots.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Total Area</span>
-                  <span className="font-semibold">
-                    {plotsLoading ? '...' : `${totalArea.toFixed(1)} ha`}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Active Crops</span>
-                  <span className="font-semibold">{plotsLoading ? '...' : activeCropsCount}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Member Since</span>
-                  <span className="font-semibold">
-                    {profile?.created_at 
-                      ? new Date(profile.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
-                      : 'N/A'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card className="bg-gradient-to-br from-primary/10 to-accent/10">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-2xl">🎖️</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      {formData.farmer_id ? 'Verified Farmer' : 'Add Farmer ID'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {formData.farmer_id ? 'PM-KISAN registered' : 'To unlock benefits'}
-                    </p>
+                {/* Email (read-only) */}
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      value={user?.email || ''}
+                      disabled
+                      className="pl-10 bg-muted"
+                    />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+
+              {/* Farm Name */}
+              <div className="space-y-2">
+                <Label htmlFor="farm_name">Farm Name</Label>
+                <Input
+                  id="farm_name"
+                  value={formData.farm_name}
+                  onChange={(e) => handleInputChange('farm_name', e.target.value)}
+                  placeholder="e.g., Wheat farmer"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Location / Village */}
+                <div className="space-y-2">
+                  <Label htmlFor="village">Location / Village</Label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="village"
+                      value={formData.village}
+                      onChange={(e) => handleInputChange('village', e.target.value)}
+                      className="pl-10"
+                      placeholder="e.g., Kamrej Surat"
+                    />
+                  </div>
+                </div>
+
+                {/* Farming Type */}
+                <div className="space-y-2">
+                  <Label htmlFor="farming_type">primary_farming_type</Label>
+                  <div className="relative">
+                    <Leaf className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                    <Select 
+                      value={formData.farming_type} 
+                      onValueChange={(v) => handleInputChange('farming_type', v)}
+                    >
+                      <SelectTrigger className="pl-10">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FARMING_TYPES.map((type) => (
+                          <SelectItem key={type} value={type.toLowerCase()}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Land Size */}
+              <div className="space-y-2">
+                <Label htmlFor="total_land_size">total_land_size</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">✎</span>
+                  <Input
+                    id="total_land_size"
+                    value={formData.total_land_size}
+                    onChange={(e) => handleInputChange('total_land_size', e.target.value)}
+                    className="pl-10"
+                    placeholder="e.g., 5.5"
+                  />
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleSave} disabled={updateProfile.isPending} className="bg-primary hover:bg-primary/90">
+                  {updateProfile.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Save Changes
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Danger Zone */}
-        <Card className="border-destructive/30">
-          <CardHeader>
-            <CardTitle className="text-destructive">Account Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button variant="destructive" onClick={signOut}>
-              {t('logout')}
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     </AppLayout>
   );
